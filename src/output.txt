@@ -1,7 +1,23 @@
-[HEATING], 0.551000
-[BROOKLYN], 0.069000
-[GENERAL CONSTRUCTION], 0.051000
-[Blocked Driveway], 0.074000
-[PLUMBING], 0.058000
-[MANHATTAN], 0.078000
-[QUEENS], 0.074000
+[ELECTRIC]0.014
+[Taxi Complaint]0.031
+[BROOKLYN]0.069
+[BRONX]0.044
+[Noise - Commercial]0.032
+[QUEENS]0.074
+[General Construction/Plumbing]0.01
+[Blocked Driveway]0.074
+[Noise - Street/Sidewalk]0.01
+[PLUMBING]0.058
+[Street Light Condition]0.015
+[HEATING]0.551
+[PAINT - PLASTER]0.025
+[GENERAL CONSTRUCTION]0.051
+[MANHATTAN]0.078
+[NONCONST]0.023
+[Missed Collection (All Materials)]0.014
+[MANHATTAN,Taxi Complaint]0.017
+[BROOKLYN,Blocked Driveway]0.027
+[BRONX,Blocked Driveway]0.018
+[MANHATTAN,Noise - Commercial]0.015
+[Blocked Driveway,QUEENS]0.026
+[QUEENS,Street Light Condition]0.011

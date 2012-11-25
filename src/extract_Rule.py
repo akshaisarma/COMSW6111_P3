@@ -9,7 +9,73 @@ from sets import Set
 from collections import defaultdict
 
 def getCandidate(L_previous):
-	# 
+	'''
+	A Priori Algorithm candidate generation
+	'''
+	# get the list of all the large itemsets in L_{k-1}
+	L_list = []
+	for (l, value) in L_previous:
+		L_list.append(l)	
+
+	# for l in L_list: 
+	# 	print ','.join(l)
+
+	# STEP 1. Join
+	L_join = [] # the list of all the itemsets after join
+	# try any pair of two itemsets in L_list 
+	for i in range(0, len(L_list)):
+		for j in range(i+1, len(L_list)):
+			# print L_list[i], L_list[j]
+
+			# try if (k-2) items in L_list[i] are in L_list[j]
+			errNum = 0 # num of different items in two rows
+			errItem = '' # store the different item in L_list[i]
+			for item in L_list[i]:
+				if item not in L_list[j]:
+					errNum = errNum + 1
+					# if there are >1 different items between L_list[i] and L_list[j]
+					if errNum > 1:
+						break
+					# keep track of the only item that is not in L_list[j]
+					errItem = item
+			
+			if (errNum == 1):
+				# only one item different between L_list[i] and L_list[j]
+				# find the errItem in L_list[j], add to joined_list
+				joined_list = []
+				for item in L_list[j]:
+					if item not in L_list[i]:
+						joined_list.append(item)
+						break
+				# add all the items in L_list[i]
+				joined_list.extend(L_list[i])
+				# sort by lexicographic order
+				joined_list = sorted(joined_list)
+				# store this itemset if not in L_join
+				if joined_list not in L_join:
+					L_join.append(joined_list)
+
+
+	# STEP 2. prune
+	L_k = []
+	for l in L_join:
+		# try if any (k-1) subset is in L_{k-1}
+		ifValid = True
+		for i in range(len(l)):
+			# new_l contains k-1 items, and sorted
+			new_l = list(l)
+			del new_l[i]
+
+			# new_l should be in L_{k-1}
+			if new_l not in L_list: 
+				ifValid = False
+				break
+
+		if ifValid:
+			# this is valid candidate
+			L_k.append((l,0.0))
+
+	return L_k
 
 class extract_Rule(object):
 
@@ -18,8 +84,8 @@ class extract_Rule(object):
 		self.min_sup = min_sup
 		self.min_conf = min_conf
 
-		self.L_dict = defaultdict(defaultdict) # store each L_k
-		self.col_list = defaultdict(set) # each set is the set of all possible values in the column
+		self.L_dict = defaultdict(list) # store each L_k (is a list of (itemset-list,sup) tuples)
+		self.col_list = defaultdict(set) # each set is the set of all possible values in each column
 		# initialize each column list by empty
 		for i in range(self.n):
 			value_set = set()
@@ -42,14 +108,14 @@ class extract_Rule(object):
 		# start with k=2
 		k = 2
 		while(True):
-			L_previous = L_dict[k-1]
+			L_previous = self.L_dict[k-1]
 			# check if L_{k-1} is empty
-			if (len(L_previous)<=0)
+			if len(L_previous)<=0:
 				break
 
-			# get the candidate C_k (this is a dictionary)
-			C_k = getCandidate(L_previous)
-			L_k = defaultdict(float)
+			# get the candidate C_k (this is a list of (itemset-list,sup) tuples)
+			C_k = getCandidate(L_previous) 
+			L_k = []
 
 			# compute the support of each candidate
 			for line in open(CSV_file):
@@ -57,8 +123,9 @@ class extract_Rule(object):
 				whole_attr_list = line.split(",")
 
 				# try each candidate if it's contained in this row
-				for c in C_k:
-					# c is a list which contains (k-1) items
+				for i in range(len(C_k)):
+					(c, value) = C_k[i]
+					# c is a set which contains (k-1) items
 					ifContained = True
 					for item in c:
 						# one attr in c is not in this row, break
@@ -67,20 +134,24 @@ class extract_Rule(object):
 							break
 					# it's contained in this row, increase the count
 					if ifContained:
-						C_k[c] = C_k[c] + 1.0
+						value = value + 1.0
+						C_k[i] = (c, value)
 
 			# after checking all the rows, get the support
-			for c in C_k:
-				value = C_k[c]/self.nRow
+			for (c, value) in C_k:
+				value = value/self.nRow
 				# print c, ";", value
 				if value >= self.min_sup:
-					L_k[attr] = value
+					L_k.append((c,value))
 
 			# store L_k in L_dict[k] and update L_previous
-			L_dict[k] = L_k
+			self.L_dict[k] = L_k
 			L_previous = L_k
 
 			k = k + 1
+
+			if k>2:
+				break
 
 
 	def compute_L1(self, CSV_file):
@@ -90,7 +161,7 @@ class extract_Rule(object):
 		Also compute the first step L1 of A priori algorithm when k=1
 		'''
 		C1 = defaultdict(float)
-		L1 = defaultdict(float)
+		L1 = [] # L1 is the list of k=1 large itemsets, each is a (itemset-list,sup) tuple
 
 		nRow = 0
 		for line in open(CSV_file):
@@ -110,9 +181,10 @@ class extract_Rule(object):
 		# compute the support for each item in C1, picking large items in L1
 		for attr in C1:
 			value = C1[attr]/nRow
-			print attr, ";", value
+			# print attr, ";", value
 			if value >= self.min_sup:
-				L1[attr] = value
+				l = [attr]
+				L1.append((l, value))
 
 		# get the number of rows in the table
 		self.nRow = nRow
@@ -122,12 +194,15 @@ class extract_Rule(object):
 
 
 	def writeFile(self, output_file):
-		# write L1
-		L1 = self.L_dict[1]
-		for attr in L1:
-			value = L1[attr]
-			output_file.write("[%s], %f\n" % (attr, value))
+		print "TODO... need to sort the output by support"
 
+		for k in self.L_dict:
+			# write L1
+			L1 = self.L_dict[k]
+			for (l, value) in L1:
+				# output_file.write("[%s], %f\n" % (attr, value))
+				output_file.write("["+",".join(l)+"]"+str(value)+"\n")
+				
 def usage():
 	print """
 	Usage:
@@ -138,7 +213,7 @@ def usage():
 		<output-file> is the output of the large itemsets and rules,
 		<num-col> is the number of columns in the table.
 
-	For example: python extract_Rule.py new.CSV 0.1 0.1 output.txt 2
+	For example: python extract_Rule.py ../data/new.CSV 0.05 0.1 output.txt 2
 	"""
 
 if __name__ == "__main__":
