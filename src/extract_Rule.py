@@ -107,8 +107,9 @@ class extract_Rule(object):
 
 		# start with k=2
 		k = 2
+		L_previous = self.L_dict[k-1]
 		while(True):
-			L_previous = self.L_dict[k-1]
+			# L_previous = self.L_dict[k-1]
 			# check if L_{k-1} is empty
 			if len(L_previous)<=0:
 				break
@@ -194,15 +195,29 @@ class extract_Rule(object):
 
 
 	def writeFile(self, output_file):
-		print "TODO... need to sort the output by support"
+		# print "TODO... need to sort the output by support"
+		# for k in self.L_dict:
+		# 	# write L1
+		# 	L1 = self.L_dict[k]
+		# 	for (l, value) in L1:
+		# 		# output_file.write("[%s], %f\n" % (attr, value))
+		# 		output_file.write("["+",".join(l)+"], "+str(value)+"\n")
 
+		sup = self.min_sup*100
+		output_file.write("==Large itemsets (min_sup=%.0f" % sup)
+		output_file.write("%)\n")
+
+		# make all L_k into one list
+		all_itemsets = []
 		for k in self.L_dict:
-			# write L1
-			L1 = self.L_dict[k]
-			for (l, value) in L1:
-				# output_file.write("[%s], %f\n" % (attr, value))
-				output_file.write("["+",".join(l)+"]"+str(value)+"\n")
-				
+			all_itemsets.extend(self.L_dict[k])
+
+		# sort by support
+		sorted_itemsets = sorted(all_itemsets, key=lambda student: student[1], reverse=True)
+		for (l, value) in sorted_itemsets:
+			output_file.write("["+",".join(l)+"], "+str(value)+"\n")
+ 
+
 def usage():
 	print """
 	Usage:
