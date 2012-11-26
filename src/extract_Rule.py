@@ -1,8 +1,8 @@
 # Author: Yuan Du (yd2234@columbia.edu)
+# Author: Akshai Sarma (as4107@columbia.edu)
 # Date: Nov 23, 2012
 # Function: extract large itemsets and association rules
 # Usage: python extract_Rule.py <CSV-file> <min-sup> <min-conf> <output-file> <num-col>
-
 
 import sys
 from sets import Set
@@ -15,14 +15,14 @@ def getCandidate(L_previous):
 	# get the list of all the large itemsets in L_{k-1}
 	L_list = []
 	for (l, value) in L_previous:
-		L_list.append(l)	
+		L_list.append(l)
 
-	# for l in L_list: 
+	# for l in L_list:
 	# 	print ','.join(l)
 
 	# STEP 1. Join
 	L_join = [] # the list of all the itemsets after join
-	# try any pair of two itemsets in L_list 
+	# try any pair of two itemsets in L_list
 	for i in range(0, len(L_list)):
 		for j in range(i+1, len(L_list)):
 			# print L_list[i], L_list[j]
@@ -38,7 +38,7 @@ def getCandidate(L_previous):
 						break
 					# keep track of the only item that is not in L_list[j]
 					errItem = item
-			
+
 			if (errNum == 1):
 				# only one item different between L_list[i] and L_list[j]
 				# find the errItem in L_list[j], add to joined_list
@@ -67,7 +67,7 @@ def getCandidate(L_previous):
 			del new_l[i]
 
 			# new_l should be in L_{k-1}
-			if new_l not in L_list: 
+			if new_l not in L_list:
 				ifValid = False
 				break
 
@@ -86,6 +86,8 @@ class extract_Rule(object):
 
 		self.L_dict = defaultdict(list) # store each L_k (is a list of (itemset-list,sup) tuples)
 		self.col_list = defaultdict(set) # each set is the set of all possible values in each column
+		self.rule_list = defaultdict(list) # each rule is [[LHS], RHS, support, confidence]
+
 		# initialize each column list by empty
 		for i in range(self.n):
 			value_set = set()
@@ -94,7 +96,7 @@ class extract_Rule(object):
 		self.nRow = 0 # num of rows
 
 		self.extractItemsets(CSV_file)
-		# self.extractRules(CSV_file)
+		self.extractRules(CSV_file)
 
 		self.writeFile(output_file)
 
@@ -115,7 +117,7 @@ class extract_Rule(object):
 				break
 
 			# get the candidate C_k (this is a list of (itemset-list,sup) tuples)
-			C_k = getCandidate(L_previous) 
+			C_k = getCandidate(L_previous)
 			L_k = []
 
 			# compute the support of each candidate
@@ -167,7 +169,7 @@ class extract_Rule(object):
 			nRow = nRow + 1 # count the number of rows
 			whole_attr_list = line.split(",")
 			for i in range(len(whole_attr_list)):
-				# store this value to 
+				# store this value to
 				attr = whole_attr_list[i]
 				# ignore empty item
 				if len(attr)<=0:
@@ -190,6 +192,9 @@ class extract_Rule(object):
 		# store L1 in L_dict[1]
 		self.L_dict[1] = L1
 
+	# TODO: Use L_k to generate rules
+	def extractRules(self, CSV_file):
+		return
 
 	def writeFile(self, output_file):
 		# print "TODO... need to sort the output by support"
@@ -213,7 +218,8 @@ class extract_Rule(object):
 		sorted_itemsets = sorted(all_itemsets, key=lambda student: student[1], reverse=True)
 		for (l, value) in sorted_itemsets:
 			output_file.write("["+",".join(l)+"], "+str(value)+"\n")
- 
+
+		# TODO : Writeout rules
 
 def usage():
 	print """
@@ -251,4 +257,3 @@ if __name__ == "__main__":
 	min_sup = float(sys.argv[2])
 	min_conf = float(sys.argv[3])
 	ex = extract_Rule(n, min_sup, min_conf, CSV_file, output_file)
-
