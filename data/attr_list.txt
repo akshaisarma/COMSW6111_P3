@@ -1,2 +1,6 @@
+Created Date
+Agency
 Complaint Type
+Location Type
+Incident Zip
 Borough

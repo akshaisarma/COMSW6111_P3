@@ -8,6 +8,8 @@ import sys
 from sets import Set
 import re
 
+# MAXROWS = 100000 # use this to limit the num of rows (-1 if no limit)
+MAXROWS = -1 # use this to limit the num of rows (-1 if no limit)
 
 class attribute_selection(object):
 
@@ -65,12 +67,25 @@ class attribute_selection(object):
 					whole_attr_list = line.split(",")
 					firstAttr = True
 					for i in range(len(whole_attr_list)):
+						# check if this is valid attribute
 						if i in self.index_list:
-							# check if this is valid attribute
+							# general attributes
 							attr = whole_attr_list[i]	
 							# replace 'Unspecified' as ''
 							if attr == 'Unspecified':
 								attr = ''
+
+							if i == 1:
+								# this is "Created Date" attribute. we only need month
+								# e.g., 01/01/2009 12:00 AM making it to M-01
+								date_list = attr.split("/")
+
+								if len(date_list) >= 3 and len(date_list[0])>0:
+									attr = 'M-'+date_list[0] 
+								else:
+									attr = ''
+
+
 							if firstAttr:
 								CSV_output.write(attr)
 								firstAttr = False
@@ -84,7 +99,7 @@ class attribute_selection(object):
 				# CSV_output2.write(line)
 				# CSV_output2.write("\n")
 
-			if index >1000:
+			if MAXROWS>0 and index >MAXROWS:
 				break
 				
 			l = CSV_input.readline()

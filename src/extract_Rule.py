@@ -146,13 +146,10 @@ class extract_Rule(object):
 					L_k.append((c,value))
 
 			# store L_k in L_dict[k] and update L_previous
-			self.L_dict[k] = L_k
-			L_previous = L_k
+			self.L_dict[k] = list(L_k)
+			L_previous = list(L_k)
 
 			k = k + 1
-
-			if k>2:
-				break
 
 
 	def compute_L1(self, CSV_file):
@@ -228,7 +225,7 @@ def usage():
 		<output-file> is the output of the large itemsets and rules,
 		<num-col> is the number of columns in the table.
 
-	For example: python extract_Rule.py ../data/new.CSV 0.05 0.1 output.txt 2
+	For example: python extract_Rule.py ../data/new.CSV 0.01 0.1 output.txt 2
 	"""
 
 if __name__ == "__main__":
