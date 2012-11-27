@@ -77,6 +77,39 @@ def getCandidate(L_previous):
 
 	return L_k
 
+def getRules(itemset):
+	'''
+	Generates all possible rules LHS => RHS from attributes in item set
+	such that there is at least one attribute in the LHS and exactly one in
+	RHS, where LHS is a set and LHS intersect RHS is empty
+	'''
+	rules = []
+	for rhs in itemset:
+		C_LHS = list(itemset)
+		C_LHS.remove(rhs)
+		subsets = all_subsets(C_LHS)
+		for lhs in subsets:
+			rules.append([lhs, rhs, 0, 0])
+	return rules
+
+def all_subsets(c_lhs):
+	'''
+	Generates all subsets of input list
+	'''
+	num_elements = len(c_lhs)
+	num_subsets = 2**num_elements
+
+	subsets = []
+	# Take each i as a bitvector for including the jth element if the jth bit
+	# of i is 1. Don't include the empty set
+	for i in range(1, num_subsets):
+		subset = []
+		for j in range(num_elements):
+			if (i >> j & 1):
+				subset.append(c_lhs[j])
+		subsets.append(subset)
+	return subsets
+
 class extract_Rule(object):
 
 	def __init__(self, n, min_sup, min_conf, CSV_file, output_file):
@@ -86,7 +119,7 @@ class extract_Rule(object):
 
 		self.L_dict = defaultdict(list) # store each L_k (is a list of (itemset-list,sup) tuples)
 		self.col_list = defaultdict(set) # each set is the set of all possible values in each column
-		self.rule_list = defaultdict(list) # each rule is [[LHS], RHS, support, confidence]
+		self.rule_list = [] # each rule is ([LHS], RHS, confidence, support)
 
 		# initialize each column list by empty
 		for i in range(self.n):
@@ -94,6 +127,7 @@ class extract_Rule(object):
 			self.col_list[i] = value_set
 
 		self.nRow = 0 # num of rows
+		self.maxK = 0 # largest itemset
 
 		self.extractItemsets(CSV_file)
 		self.extractRules(CSV_file)
@@ -114,6 +148,7 @@ class extract_Rule(object):
 			# L_previous = self.L_dict[k-1]
 			# check if L_{k-1} is empty
 			if len(L_previous)<=0:
+				self.maxK = k-1
 				break
 
 			# get the candidate C_k (this is a list of (itemset-list,sup) tuples)
@@ -192,8 +227,54 @@ class extract_Rule(object):
 		# store L1 in L_dict[1]
 		self.L_dict[1] = L1
 
-	# TODO: Use L_k to generate rules
+
 	def extractRules(self, CSV_file):
+		'''
+		Generates all rules for all itemsets of >=2.
+		Computes confidence for all rules (in one pass over data file)
+		'''
+		f = open(CSV_file)
+
+		# For each item set starting from 2, rule_dict will store all rules
+		# for the item set, with its support. rule_dict[k] = [ ([Rules], support), ...]
+		# Rules is [[LHS], RHS, tuplesWithLHSANDRHS, tuplesWithLHS]
+		rule_dict = defaultdict(list)
+		k = 2 # Start with item set of size 2
+
+		while (k <= self.maxK):
+			k_rules = []
+			k_sets = self.L_dict[k]
+			for (itemset, sup) in k_set:
+				rules = getRules(itemset)
+				k_rules.append((rules, sup))
+			rule_dict[k] = k_rules
+			k += 1
+
+		for line in f:
+			line = line.strip()
+			values = set(line.split(","))
+			# For now treat it as a set, will not work if same values in
+			# different columns. Our code is agnostic to columns.
+			k = 2
+			while (k <= self.maxK):
+				k_rules = rule_dict[k]
+				for (rules, sup) in k_rules:
+					for rule in rules:
+						lhs = set(rule[0])
+						rhs = set(rule[1])
+						if lhs.issubset(values):
+							rule[3] += 1
+							if rhs in values:
+								rule[2] += 1
+
+		k = 2
+		while (k <= self.maxK):
+			k_rules = rule_dict[k]
+			for (rules, sup) in k_rules:
+				for rule in rules:
+					conf = float(rule[2])/rule[3]
+					if (conf >= self.min_conf):
+						self.rule_dict.append((rule[0], rule[1], conf, sup)
 		return
 
 	def writeFile(self, output_file):
@@ -206,8 +287,7 @@ class extract_Rule(object):
 		# 		output_file.write("["+",".join(l)+"], "+str(value)+"\n")
 
 		sup = self.min_sup*100
-		output_file.write("==Large itemsets (min_sup=%.0f" % sup)
-		output_file.write("%)\n")
+		output_file.write("==Large itemsets (min_sup=%.0f%%)\n" % sup)
 
 		# make all L_k into one list
 		all_itemsets = []
@@ -219,7 +299,13 @@ class extract_Rule(object):
 		for (l, value) in sorted_itemsets:
 			output_file.write("["+",".join(l)+"], "+str(value)+"\n")
 
-		# TODO : Writeout rules
+		conf = self.min_conf*100
+		output_file.write("==High-confidence association rules (min_conf=%.0f%%)\n" % conf)
+		sorted_rules = sorted(self.rule_list, key=lambda x: x[2], reverse=True)
+		for rule in sorted_rules:
+			output_file.write("[" + ",".join(rule[0]) + "] => [" + rule[1] + "]" +
+								"(Conf: %.0f%%, Supp: %.0f%%)\n" % (rule[2]*100, rule[3]*100) )
+		return
 
 def usage():
 	print """
