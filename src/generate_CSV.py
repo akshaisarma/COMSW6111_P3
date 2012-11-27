@@ -8,8 +8,8 @@ import sys
 from sets import Set
 import re
 
-# MAXROWS = 100000 # use this to limit the num of rows (-1 if no limit)
-MAXROWS = -1 # use this to limit the num of rows (-1 if no limit)
+MAXROWS = 10 # use this to limit the num of rows (-1 if no limit)
+# MAXROWS = -1 # use this to limit the num of rows (-1 if no limit)
 
 class attribute_selection(object):
 

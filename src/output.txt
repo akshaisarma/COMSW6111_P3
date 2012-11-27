@@ -1,0 +1,6 @@
+==Large itemsets (min_sup=20%)
+[HEATING], 0.5
+[BROOKLYN], 0.3
+[Traffic Signal Condition], 0.3
+[BROOKLYN,Traffic Signal Condition], 0.3
+==High-confidence association rules (min_conf=10%)

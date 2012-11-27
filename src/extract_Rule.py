@@ -24,37 +24,57 @@ def getCandidate(L_previous):
 	L_join = [] # the list of all the itemsets after join
 	# try any pair of two itemsets in L_list
 	for i in range(0, len(L_list)):
+		k = len(L_list[i])+1
 		for j in range(i+1, len(L_list)):
-			# print L_list[i], L_list[j]
 
-			# try if (k-2) items in L_list[i] are in L_list[j]
-			errNum = 0 # num of different items in two rows
-			errItem = '' # store the different item in L_list[i]
-			for item in L_list[i]:
-				if item not in L_list[j]:
-					errNum = errNum + 1
-					# if there are >1 different items between L_list[i] and L_list[j]
-					if errNum > 1:
-						break
-					# keep track of the only item that is not in L_list[j]
-					errItem = item
+			# try if first (k-2) items in L_list[i] are in L_list[j]
+			joinValid = True # keeps true if only the last item is different
+			for t in range(k-2):
+				item1 = L_list[i][t]
+				item2 = L_list[j][t]
+				if item1!= item2:
+					joinValid = False
+					break
 
-			if (errNum == 1):
-				# only one item different between L_list[i] and L_list[j]
-				# find the errItem in L_list[j], add to joined_list
+			# try the last element, they should be different
+			if joinValid:
+				t = k-2
+				item1 = L_list[i][t]
+				item2 = L_list[j][t]
+				if item1 == item2:
+					joinValid = False
+
+			if joinValid:
+				# only the last item different between L_list[i] and L_list[j]
+				# keep the first k-2 items, add two last-items to joined_list
 				joined_list = []
-				for item in L_list[j]:
-					if item not in L_list[i]:
-						joined_list.append(item)
-						break
-				# add all the items in L_list[i]
-				joined_list.extend(L_list[i])
-				# sort by lexicographic order
-				joined_list = sorted(joined_list)
-				# store this itemset if not in L_join
-				if joined_list not in L_join:
-					L_join.append(joined_list)
+				for t in range(k-2):
+					item = L_list[i][t]
+					joined_list.append(item)
 
+				# order the last items
+				t = k-2
+				item1 = L_list[i][t]
+				item2 = L_list[j][t]
+				if item1 > item2:
+					joined_list.append(item2)
+					joined_list.append(item1)
+				else:
+					joined_list.append(item1)
+					joined_list.append(item2)	
+				
+				# no ndde to sort...
+				# # sort by lexicographic order
+				# joined_list = sorted(joined_list)
+
+				# it cannot be in L_join already...
+				# # store this itemset if not in L_join
+				# if joined_list not in L_join:
+				L_join.append(joined_list)
+
+	# print ' *** Print L_join *** '
+	# for l in L_join:
+	# 	print ','.join(l)
 
 	# STEP 2. prune
 	L_k = []
@@ -130,7 +150,7 @@ class extract_Rule(object):
 		self.maxK = 0 # largest itemset
 
 		self.extractItemsets(CSV_file)
-		self.extractRules(CSV_file)
+		# self.extractRules(CSV_file)
 
 		self.writeFile(output_file)
 
