@@ -61,8 +61,8 @@ def getCandidate(L_previous):
 					joined_list.append(item1)
 				else:
 					joined_list.append(item1)
-					joined_list.append(item2)	
-				
+					joined_list.append(item2)
+
 				# no ndde to sort...
 				# # sort by lexicographic order
 				# joined_list = sorted(joined_list)
@@ -150,7 +150,7 @@ class extract_Rule(object):
 		self.maxK = 0 # largest itemset
 
 		self.extractItemsets(CSV_file)
-		# self.extractRules(CSV_file)
+		self.extractRules(CSV_file)
 
 		self.writeFile(output_file)
 
@@ -260,11 +260,10 @@ class extract_Rule(object):
 		# Rules is [[LHS], RHS, tuplesWithLHSANDRHS, tuplesWithLHS]
 		rule_dict = defaultdict(list)
 		k = 2 # Start with item set of size 2
-
 		while (k <= self.maxK):
 			k_rules = []
 			k_sets = self.L_dict[k]
-			for (itemset, sup) in k_set:
+			for (itemset, sup) in k_sets:
 				rules = getRules(itemset)
 				k_rules.append((rules, sup))
 			rule_dict[k] = k_rules
@@ -281,11 +280,12 @@ class extract_Rule(object):
 				for (rules, sup) in k_rules:
 					for rule in rules:
 						lhs = set(rule[0])
-						rhs = set(rule[1])
+						rhs = rule[1]
 						if lhs.issubset(values):
 							rule[3] += 1
 							if rhs in values:
 								rule[2] += 1
+				k += 1
 
 		k = 2
 		while (k <= self.maxK):
@@ -294,7 +294,9 @@ class extract_Rule(object):
 				for rule in rules:
 					conf = float(rule[2])/rule[3]
 					if (conf >= self.min_conf):
-						self.rule_dict.append((rule[0], rule[1], conf, sup)
+						self.rule_list.append((rule[0], rule[1], conf, sup))
+			del rule_dict[k]
+			k += 1
 		return
 
 	def writeFile(self, output_file):
