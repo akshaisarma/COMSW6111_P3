@@ -1,6 +1,14 @@
-==Large itemsets (min_sup=20%)
+==Large itemsets (min_sup=10%)
 [HEATING], 0.5
 [BROOKLYN], 0.3
 [Traffic Signal Condition], 0.3
 [BROOKLYN,Traffic Signal Condition], 0.3
+[NONCONST], 0.1
+[Smoking], 0.1
+[QUEENS], 0.1
+[QUEENS,Smoking], 0.1
 ==High-confidence association rules (min_conf=10%)
+[Traffic Signal Condition] => [BROOKLYN](Conf: 100%, Supp: 30%)
+[BROOKLYN] => [Traffic Signal Condition](Conf: 100%, Supp: 30%)
+[Smoking] => [QUEENS](Conf: 100%, Supp: 10%)
+[QUEENS] => [Smoking](Conf: 100%, Supp: 10%)

@@ -30,18 +30,18 @@ def getCandidate(L_previous):
 			# try if first (k-2) items in L_list[i] are in L_list[j]
 			joinValid = True # keeps true if only the last item is different
 			for t in range(k-2):
-				item1 = L_list[i][t]
-				item2 = L_list[j][t]
-				if item1!= item2:
+				itemTuple1 = L_list[i][t] # itemTuple1 = (item1, colNo1)
+				itemTuple2 = L_list[j][t]
+				if itemTuple1 != itemTuple2:
 					joinValid = False
 					break
 
-			# try the last element, they should be different
+			# try the last element, they should be in different column
 			if joinValid:
 				t = k-2
-				item1 = L_list[i][t]
-				item2 = L_list[j][t]
-				if item1 == item2:
+				(item1, colNo1) = L_list[i][t]
+				(item2, colNo2) = L_list[j][t]
+				if colNo1 == colNo2: # same column
 					joinValid = False
 
 			if joinValid:
@@ -49,21 +49,21 @@ def getCandidate(L_previous):
 				# keep the first k-2 items, add two last-items to joined_list
 				joined_list = []
 				for t in range(k-2):
-					item = L_list[i][t]
-					joined_list.append(item)
+					itemTuple = L_list[i][t]
+					joined_list.append(itemTuple)
 
-				# order the last items
+				# order the last items by colNo
 				t = k-2
-				item1 = L_list[i][t]
-				item2 = L_list[j][t]
-				if item1 > item2:
-					joined_list.append(item2)
-					joined_list.append(item1)
+				(item1, colNo1) = L_list[i][t]
+				(item2, colNo2) = L_list[j][t]
+				if colNo1 < colNo2:
+					joined_list.append((item1, colNo1))
+					joined_list.append((item2, colNo2))
 				else:
-					joined_list.append(item1)
-					joined_list.append(item2)
+					joined_list.append((item2, colNo2))
+					joined_list.append((item1, colNo1))
 
-				# no ndde to sort...
+				# no need to sort...
 				# # sort by lexicographic order
 				# joined_list = sorted(joined_list)
 
@@ -73,8 +73,8 @@ def getCandidate(L_previous):
 				L_join.append(joined_list)
 
 	# print ' *** Print L_join *** '
-	# for l in L_join:
-	# 	print ','.join(l)
+	# print L_previous
+	# print L_join
 
 	# STEP 2. prune
 	L_k = []
@@ -113,25 +113,19 @@ def getRules(itemset):
 
 class extract_Rule(object):
 
-	def __init__(self, n, min_sup, min_conf, CSV_file, output_file):
-		self.n = n
+	def __init__(self, min_sup, min_conf, CSV_file, output_file):
 		self.min_sup = min_sup
 		self.min_conf = min_conf
 
-		self.L_dict = defaultdict(list) # store each L_k (is a list of (itemset-list,sup) tuples)
-		self.col_list = defaultdict(set) # each set is the set of all possible values in each column
+		self.L_dict = defaultdict(list) # store each L_k is a list of (itemset-list,sup) tuples, and each itemset-list is [(item1,colNo1),...]
 		self.rule_list = [] # each rule is ([LHS], RHS, confidence, support)
-
-		# initialize each column list by empty
-		for i in range(self.n):
-			value_set = set()
-			self.col_list[i] = value_set
+		self.allRows = []
 
 		self.nRow = 0 # num of rows
 		self.maxK = 0 # largest itemset
 
 		self.extractItemsets(CSV_file)
-		self.extractRules(CSV_file)
+		# self.extractRules(CSV_file)
 
 		self.writeFile(output_file)
 
@@ -156,19 +150,20 @@ class extract_Rule(object):
 			C_k = getCandidate(L_previous)
 			L_k = []
 
-			# compute the support of each candidate
-			for line in open(CSV_file):
-				line = line.strip()
-				whole_attr_list = line.split(",")
+			# print "*** L_previous and C_k ***"
+			# print L_previous
+			# print C_k
 
+			# compute the support of each candidate
+			for row in self.allRows:
 				# try each candidate if it's contained in this row
 				for i in range(len(C_k)):
 					(c, value) = C_k[i]
-					# c is a set which contains (k-1) items
+					# c is a list which contains (k-1) items: [(item1,colNo1),...]
 					ifContained = True
 					for item in c:
 						# one attr in c is not in this row, break
-						if item not in whole_attr_list:
+						if item not in row:
 							ifContained = False
 							break
 					# it's contained in this row, increase the count
@@ -192,34 +187,44 @@ class extract_Rule(object):
 
 	def compute_L1(self, CSV_file):
 		'''
-		Get the set of possible values in each column,
-		and stored in col_list.
+		Get all the rows from the dataset table
+		and stored in self.L_dict[0].
 		Also compute the first step L1 of A priori algorithm when k=1
 		'''
-		C1 = defaultdict(float)
+		C1 = defaultdict(float) # store the count of (item, colNo)
 		L1 = [] # L1 is the list of k=1 large itemsets, each is a (itemset-list,sup) tuple
 
+		L0 = [] # L0 stores all the rows [row1, row2...], each row is [(item1, colNo1),...]
 		nRow = 0
 		for line in open(CSV_file):
 			line = line.strip()
 			nRow = nRow + 1 # count the number of rows
 			whole_attr_list = line.split(",")
+
+			row = []
 			for i in range(len(whole_attr_list)):
 				# store this value to
 				attr = whole_attr_list[i]
 				# ignore empty item
 				if len(attr)<=0:
 					continue
-				C1[attr] = C1[attr] + 1.0
-				if len(attr)>0:
-					self.col_list[i].add(attr)
+
+				# store this item to row
+				row.append((attr, i))
+
+				# count the (attr, i) pair
+				C1[(attr, i)] = C1[(attr, i)] + 1.0
+
+			# store the row only if it's non-empty
+			if len(row)>0:
+				L0.append(row)
 
 		# compute the support for each item in C1, picking large items in L1
-		for attr in C1:
-			value = C1[attr]/nRow
+		for (attr, i) in C1:
+			value = C1[(attr, i)]/nRow
 			# print attr, ";", value
 			if value >= self.min_sup:
-				l = [attr]
+				l = [(attr, i)]
 				L1.append((l, value))
 
 		# get the number of rows in the table
@@ -228,6 +233,8 @@ class extract_Rule(object):
 		# store L1 in L_dict[1]
 		self.L_dict[1] = L1
 
+		# store L0 in self.allRows
+		self.allRows = L0
 
 	def extractRules(self, CSV_file):
 		'''
@@ -281,14 +288,9 @@ class extract_Rule(object):
 		return
 
 	def writeFile(self, output_file):
-		# print "TODO... need to sort the output by support"
-		# for k in self.L_dict:
-		# 	# write L1
-		# 	L1 = self.L_dict[k]
-		# 	for (l, value) in L1:
-		# 		# output_file.write("[%s], %f\n" % (attr, value))
-		# 		output_file.write("["+",".join(l)+"], "+str(value)+"\n")
-
+		'''
+		Write the large itemsets and association rules into output file
+		'''
 		sup = self.min_sup*100
 		output_file.write("==Large itemsets (min_sup=%.0f%%)\n" % sup)
 
@@ -300,7 +302,11 @@ class extract_Rule(object):
 		# sort by support
 		sorted_itemsets = sorted(all_itemsets, key=lambda student: student[1], reverse=True)
 		for (l, value) in sorted_itemsets:
-			output_file.write("["+",".join(l)+"], "+str(value)+"\n")
+			item_list = []
+			for (item, colNo) in l:
+				item_list.append(item)
+
+			output_file.write("["+",".join(item_list)+"], "+str(value)+"\n")
 
 		conf = self.min_conf*100
 		output_file.write("==High-confidence association rules (min_conf=%.0f%%)\n" % conf)
@@ -313,19 +319,18 @@ class extract_Rule(object):
 def usage():
 	print """
 	Usage:
-	python extract_Rule.py <CSV-file> <min-sup> <min-conf> <output-file> <num-col>
+	python extract_Rule.py <CSV-file> <min-sup> <min-conf> <output-file>
 	where <CSV-file> is INTEGRATED-DATASET file,
 		<min-sup> is the value of minimun support,
 		<min-conf> is the value of minimun confidence,
-		<output-file> is the output of the large itemsets and rules,
-		<num-col> is the number of columns in the table.
+		<output-file> is the output of the large itemsets and rules.
 
-	For example: python extract_Rule.py ../data/new.CSV 0.01 0.1 output.txt 2
+	For example: python extract_Rule.py ../data/new.CSV 0.01 0.1 output.txt
 	"""
 
 if __name__ == "__main__":
 
-	if len(sys.argv)!=6: # Expect exactly three arguments
+	if len(sys.argv)!=5: # Expect exactly three arguments
 		usage()
 		sys.exit(2)
 
@@ -342,7 +347,6 @@ if __name__ == "__main__":
 		sys.stderr.write("ERROR: Cannot write outputfile %s.\n" % (sys.argv[4]))
 		sys.exit(1)
 
-	n = int(sys.argv[5])
 	min_sup = float(sys.argv[2])
 	min_conf = float(sys.argv[3])
-	ex = extract_Rule(n, min_sup, min_conf, CSV_file, output_file)
+	ex = extract_Rule(min_sup, min_conf, CSV_file, output_file)
