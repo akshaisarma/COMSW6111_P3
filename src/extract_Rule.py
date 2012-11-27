@@ -100,35 +100,16 @@ def getCandidate(L_previous):
 def getRules(itemset):
 	'''
 	Generates all possible rules LHS => RHS from attributes in item set
-	such that there is at least one attribute in the LHS and exactly one in
-	RHS, where LHS is a set and LHS intersect RHS is empty
+	such that there is exactly len(itemset)-1 attribute in the LHS and exactly one in
+	RHS, where LHS is a set and LHS intersect RHS is empty. All the rules of
+	smaller sizes must have been generated for a smaller k.
 	'''
 	rules = []
 	for rhs in itemset:
-		C_LHS = list(itemset)
-		C_LHS.remove(rhs)
-		subsets = all_subsets(C_LHS)
-		for lhs in subsets:
-			rules.append([lhs, rhs, 0, 0])
+		lhs = list(itemset)
+		lhs.remove(rhs)
+		rules.append([lhs, rhs, 0, 0])
 	return rules
-
-def all_subsets(c_lhs):
-	'''
-	Generates all subsets of input list
-	'''
-	num_elements = len(c_lhs)
-	num_subsets = 2**num_elements
-
-	subsets = []
-	# Take each i as a bitvector for including the jth element if the jth bit
-	# of i is 1. Don't include the empty set
-	for i in range(1, num_subsets):
-		subset = []
-		for j in range(num_elements):
-			if (i >> j & 1):
-				subset.append(c_lhs[j])
-		subsets.append(subset)
-	return subsets
 
 class extract_Rule(object):
 
@@ -256,8 +237,9 @@ class extract_Rule(object):
 		f = open(CSV_file)
 
 		# For each item set starting from 2, rule_dict will store all rules
-		# for the item set, with its support. rule_dict[k] = [ ([Rules], support), ...]
-		# Rules is [[LHS], RHS, tuplesWithLHSANDRHS, tuplesWithLHS]
+		# for the item set. rule_dict[k] = [ <Rule>]
+		# Rule is [[LHS], RHS, tuplesWithLHSANDRHS, tuplesWithLHS] where LHS
+		# is at least of size k-1
 		rule_dict = defaultdict(list)
 		k = 2 # Start with item set of size 2
 		while (k <= self.maxK):
@@ -265,7 +247,7 @@ class extract_Rule(object):
 			k_sets = self.L_dict[k]
 			for (itemset, sup) in k_sets:
 				rules = getRules(itemset)
-				k_rules.append((rules, sup))
+				k_rules.extend(rules)
 			rule_dict[k] = k_rules
 			k += 1
 
@@ -277,24 +259,23 @@ class extract_Rule(object):
 			k = 2
 			while (k <= self.maxK):
 				k_rules = rule_dict[k]
-				for (rules, sup) in k_rules:
-					for rule in rules:
-						lhs = set(rule[0])
-						rhs = rule[1]
-						if lhs.issubset(values):
-							rule[3] += 1
-							if rhs in values:
-								rule[2] += 1
+				for rule in k_rules:
+					lhs = set(rule[0])
+					rhs = rule[1]
+					if lhs.issubset(values):
+						rule[3] += 1
+						if rhs in values:
+							rule[2] += 1
 				k += 1
 
 		k = 2
 		while (k <= self.maxK):
 			k_rules = rule_dict[k]
-			for (rules, sup) in k_rules:
-				for rule in rules:
-					conf = float(rule[2])/rule[3]
-					if (conf >= self.min_conf):
-						self.rule_list.append((rule[0], rule[1], conf, sup))
+			for rule in k_rules:
+				conf = float(rule[2])/rule[3]
+				if (conf >= self.min_conf):
+					sup = float(rule[2])/self.nRow
+					self.rule_list.append((rule[0], rule[1], conf, sup))
 			del rule_dict[k]
 			k += 1
 		return
