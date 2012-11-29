@@ -302,10 +302,14 @@ This either shows that there is much more of transportation issues in Queens and
 Manhattan (which is rather counter-intuitive). However, if we consider that Queens and Brooklyn are
 residential areas, it makes sense. People are less tolerant of transportation issues in the suburbs.
 
-4. Complaint Type VS Agency VS Location Type VS Borough
+4. Complaint Type VS Agency VS Borough
 
 [NYPD,BROOKLYN] => [Street/Sidewalk](Conf: 81%, Supp: 2%)
+[NYPD,Street/Sidewalk] => [BROOKLYN](Conf: 32%, Supp: 2%)
+
 [DOT,QUEENS] => [Street Light Condition](Conf: 44%, Supp: 2%))
+[DOT,Street Light Condition] => [QUEENS](Conf: 33%, Supp: 2%)
+
 [DOB] => [QUEENS](Conf: 34%, Supp: 2%)
 [DSNY] => [BROOKLYN](Conf: 33%, Supp: 3%)
 
