@@ -1,14 +1,47 @@
-==Large itemsets (min_sup=10%)
+==Large itemsets (min_sup=40%)
+[M-01], 1.0
+[RESIDENTIAL BUILDING], 0.6
+[HPD], 0.6
+[M-01,RESIDENTIAL BUILDING], 0.6
+[HPD,RESIDENTIAL BUILDING], 0.6
+[M-01,HPD], 0.6
+[M-01,HPD,RESIDENTIAL BUILDING], 0.6
 [HEATING], 0.5
-[BROOKLYN], 0.3
-[Traffic Signal Condition], 0.3
-[BROOKLYN,Traffic Signal Condition], 0.3
-[NONCONST], 0.1
-[Smoking], 0.1
-[QUEENS], 0.1
-[QUEENS,Smoking], 0.1
+[HEATING,RESIDENTIAL BUILDING], 0.5
+[M-01,HEATING], 0.5
+[HPD,HEATING], 0.5
+[M-01,HEATING,RESIDENTIAL BUILDING], 0.5
+[HPD,HEATING,RESIDENTIAL BUILDING], 0.5
+[M-01,HPD,HEATING], 0.5
+[M-01,HPD,HEATING,RESIDENTIAL BUILDING], 0.5
+
+
 ==High-confidence association rules (min_conf=10%)
-[Traffic Signal Condition] => [BROOKLYN](Conf: 100%, Supp: 30%)
-[BROOKLYN] => [Traffic Signal Condition](Conf: 100%, Supp: 30%)
-[Smoking] => [QUEENS](Conf: 100%, Supp: 10%)
-[QUEENS] => [Smoking](Conf: 100%, Supp: 10%)
+[HEATING] => [RESIDENTIAL BUILDING](Conf: 100%, Supp: 50%)
+[RESIDENTIAL BUILDING] => [M-01](Conf: 100%, Supp: 60%)
+[RESIDENTIAL BUILDING] => [HPD](Conf: 100%, Supp: 60%)
+[HPD] => [RESIDENTIAL BUILDING](Conf: 100%, Supp: 60%)
+[HEATING] => [M-01](Conf: 100%, Supp: 50%)
+[HEATING] => [HPD](Conf: 100%, Supp: 50%)
+[HPD] => [M-01](Conf: 100%, Supp: 60%)
+[HEATING,RESIDENTIAL BUILDING] => [M-01](Conf: 100%, Supp: 50%)
+[M-01,HEATING] => [RESIDENTIAL BUILDING](Conf: 100%, Supp: 50%)
+[HPD,RESIDENTIAL BUILDING] => [M-01](Conf: 100%, Supp: 60%)
+[M-01,RESIDENTIAL BUILDING] => [HPD](Conf: 100%, Supp: 60%)
+[M-01,HPD] => [RESIDENTIAL BUILDING](Conf: 100%, Supp: 60%)
+[HEATING,RESIDENTIAL BUILDING] => [HPD](Conf: 100%, Supp: 50%)
+[HPD,HEATING] => [RESIDENTIAL BUILDING](Conf: 100%, Supp: 50%)
+[HPD,HEATING] => [M-01](Conf: 100%, Supp: 50%)
+[M-01,HEATING] => [HPD](Conf: 100%, Supp: 50%)
+[HPD,HEATING,RESIDENTIAL BUILDING] => [M-01](Conf: 100%, Supp: 50%)
+[M-01,HEATING,RESIDENTIAL BUILDING] => [HPD](Conf: 100%, Supp: 50%)
+[M-01,HPD,HEATING] => [RESIDENTIAL BUILDING](Conf: 100%, Supp: 50%)
+[RESIDENTIAL BUILDING] => [HEATING](Conf: 83%, Supp: 50%)
+[HPD] => [HEATING](Conf: 83%, Supp: 50%)
+[M-01,RESIDENTIAL BUILDING] => [HEATING](Conf: 83%, Supp: 50%)
+[HPD,RESIDENTIAL BUILDING] => [HEATING](Conf: 83%, Supp: 50%)
+[M-01,HPD] => [HEATING](Conf: 83%, Supp: 50%)
+[M-01,HPD,RESIDENTIAL BUILDING] => [HEATING](Conf: 83%, Supp: 50%)
+[M-01] => [RESIDENTIAL BUILDING](Conf: 60%, Supp: 60%)
+[M-01] => [HPD](Conf: 60%, Supp: 60%)
+[M-01] => [HEATING](Conf: 50%, Supp: 50%)

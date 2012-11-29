@@ -7,18 +7,38 @@
 import sys
 from sets import Set
 import re
+import random
+from collections import defaultdict
 
-MAXROWS = 10 # use this to limit the num of rows (-1 if no limit)
-# MAXROWS = -1 # use this to limit the num of rows (-1 if no limit)
+# MAXROWS = 10 # use this to limit the num of rows (-1 if no limit)
+MAXROWS = -1 # use this to limit the num of rows (-1 if no limit)
+
+TargetRows = 100000
+TotalRows = 1783133
+TargetUpper = TargetRows*1.0/TotalRows
+Month_count = [('01',190672),('02',146081),('03',152854),('04',142147),('05',133735),('06',141523),('07',141213),('08',144857),('09',128200),('10',154531),('11',138040),('12',169280)]
 
 class attribute_selection(object):
 
 	def __init__(self, attr_list_file, CSV_input, CSV_output):
 		self.attr_list = set()
 		self.index_list = set()
+		
+		self.month_map = defaultdict(int)
+		for (month, count) in Month_count:
+			self.month_map[month] = count
+
+		# self.month_count = defaultdict(int)
 
 		self.create_attr_list(attr_list_file)
 		self.generate(CSV_input, CSV_output)
+
+		# totalCount = 0
+		# for month in self.month_count:
+		# 	count = self.month_count[month]
+		# 	totalCount = totalCount + count
+		# 	print month, count
+		# print 'totalCount = ', totalCount
 
 		# for i in self.index_list:
 		# 	print 'i=',i
@@ -63,9 +83,16 @@ class attribute_selection(object):
 							# print i
 							self.index_list.add(i)
 				else:
+
+					# # randomly sample RandomRows rows
+					# r = random.random()
+					# # print r, TargetUpper
+					# if r < TargetUpper:
 					# this is general row of the tables: each item is the value of attributes
 					whole_attr_list = line.split(",")
-					firstAttr = True
+					# firstAttr = True
+					output_list = []
+					TargetUpper = 0.0
 					for i in range(len(whole_attr_list)):
 						# check if this is valid attribute
 						if i in self.index_list:
@@ -81,23 +108,25 @@ class attribute_selection(object):
 								date_list = attr.split("/")
 
 								if len(date_list) >= 3 and len(date_list[0])>0:
-									attr = 'M-'+date_list[0] 
+									month = date_list[0]
+									count = self.month_map[month]
+									# update TargetUpper
+									TargetUpper = 1.0*count/TotalRows
+									attr = 'M'+month 
+
 								else:
 									attr = ''
 
+							output_list.append(attr)
+							
+					r = random.random()
+					if :
+						CSV_output.write(','.join(output_list)+"\n")
 
-							if firstAttr:
-								CSV_output.write(attr)
-								firstAttr = False
-							else:
-								CSV_output.write(','+attr)
-					if firstAttr==False:
-						CSV_output.write("\n")
 
 
 				index = index + 1
-				# CSV_output2.write(line)
-				# CSV_output2.write("\n")
+
 
 			if MAXROWS>0 and index >MAXROWS:
 				break
@@ -106,7 +135,7 @@ class attribute_selection(object):
 
 
 
-		
+		print 'index = ',index
 
 
 def usage():
