@@ -1,7 +1,8 @@
 # Author: Yuan Du (yd2234@columbia.edu)
+# Author: Akshai Sarma (as4107@columbia.edu)
 # Date: Nov 23, 2012
-# Function: generate INTEGRATED-DATASET CSV file 
-# Usage: python generate_CSV.py <raw-CSV-file> <attr-list-file> <new-CSV-file> 
+# Function: generate INTEGRATED-DATASET CSV file
+# Usage: python generate_CSV.py <raw-CSV-file> <attr-list-file> <new-CSV-file>
 
 
 import sys
@@ -13,17 +14,18 @@ from collections import defaultdict
 # MAXROWS = 10 # use this to limit the num of rows (-1 if no limit)
 MAXROWS = -1 # use this to limit the num of rows (-1 if no limit)
 
-TargetRows = 100000
+# Number of total rows in month/ReductionPerMonth is
+ReductionPerMonth = 10
 TotalRows = 1783133
-TargetUpper = TargetRows*1.0/TotalRows
 Month_count = [('01',190672),('02',146081),('03',152854),('04',142147),('05',133735),('06',141523),('07',141213),('08',144857),('09',128200),('10',154531),('11',138040),('12',169280)]
+Month_name = {'01': 'January', '02': 'February', '03': 'March', '04': 'April', '05': 'May', '06': 'June', '07': 'July', '08': 'August', '09': 'September', '10': 'October', '11': 'November', '12': 'December'}
 
 class attribute_selection(object):
 
 	def __init__(self, attr_list_file, CSV_input, CSV_output):
 		self.attr_list = set()
 		self.index_list = set()
-		
+
 		self.month_map = defaultdict(int)
 		for (month, count) in Month_count:
 			self.month_map[month] = count
@@ -60,88 +62,92 @@ class attribute_selection(object):
 		Read the first line for attribute info,
 		and re-generate CSV line by line with only attributes in the list
 		'''
-		# try:
-		# 	CSV_output2 = file('first1000.CSV',"w")
-		# except IOError:
-		# 	sys.stderr.write("ERROR: Cannot write outputfile %s.\n" % (CSV_output2))
-		# 	sys.exit(1)
-		
 		index = 0
+		l = CSV_input.readline().strip()
+		l = re.sub(r"\"[^\"]*\"", "", l)
+		# this is the first line: each item is the name of attributes
+		whole_attr_list = l.split(",")
+		for i in range(len(whole_attr_list)):
+			# check if this is valid attribute
+			attr = whole_attr_list[i]
+			if attr in self.attr_list:
+				self.index_list.add(i)
+
 		l = CSV_input.readline()
+		current_month = ''
+		month_reservoir = []
+		month_row = 0
 		while l:
 			line = l.strip()
 			line = re.sub(r"\"[^\"]*\"", "", line)
 			if line:
-				# check if this is the first line
-				if index == 0:
-					# this is the first line: each item is the name of attributes
-					whole_attr_list = line.split(",")
-					for i in range(len(whole_attr_list)):
-						# check if this is valid attribute
-						attr = whole_attr_list[i]
-						if attr in self.attr_list:
-							# print i
-							self.index_list.add(i)
+				whole_attr_list = line.split(",")
+
+				date = whole_attr_list[1]
+				# this is "Created Date" attribute. we only need month
+				# e.g., 01/01/2009 12:00 AM making it to 'January'
+				date_list = date.split("/")
+				month = date_list[0]
+				# If new month, update new new month information and writeout
+				if month != current_month:
+					current_month = month
+					max_month_rows = self.month_map[month]/ReductionPerMonth
+					month_name = Month_name[month]
+					month_row = 0
+					for row in month_reservoir:
+						CSV_output.write(row + "\n")
+					month_reservoir = []
+
+				# Reservoir sampling. Put required rows into array
+				# For the future rows, pick with probabilty max_month_rows/month_row
+				# and replace any of the rows in month_reservoir with prob 1/max_month_rows
+				# In the end, we should have a uniform random distribution of max_month_rows
+				# in month_reservoir. Write them all to file.
+
+				if (len(month_reservoir) >= max_month_rows):
+					should_choose = random.random()
+					# month_row will be >= max_month_rows, so division will be <= 1
+					if (should_choose <= float(max_month_rows)/month_row):
+						replace_row = random.randint(0, max_month_rows-1)
+						month_reservoir[replace_row] = self.getRow(whole_attr_list, month_name)
 				else:
+					month_reservoir.append(self.getRow(whole_attr_list, month_name))
 
-					# # randomly sample RandomRows rows
-					# r = random.random()
-					# # print r, TargetUpper
-					# if r < TargetUpper:
-					# this is general row of the tables: each item is the value of attributes
-					whole_attr_list = line.split(",")
-					# firstAttr = True
-					output_list = []
-					TargetUpper = 0.0
-					for i in range(len(whole_attr_list)):
-						# check if this is valid attribute
-						if i in self.index_list:
-							# general attributes
-							attr = whole_attr_list[i]	
-							# replace 'Unspecified' as ''
-							if attr == 'Unspecified':
-								attr = ''
+				month_row += 1
 
-							if i == 1:
-								# this is "Created Date" attribute. we only need month
-								# e.g., 01/01/2009 12:00 AM making it to M-01
-								date_list = attr.split("/")
+			index += 1
 
-								if len(date_list) >= 3 and len(date_list[0])>0:
-									month = date_list[0]
-									count = self.month_map[month]
-									# update TargetUpper
-									TargetUpper = 1.0*count/TotalRows
-									attr = 'M'+month 
-
-								else:
-									attr = ''
-
-							output_list.append(attr)
-							
-					r = random.random()
-					if :
-						CSV_output.write(','.join(output_list)+"\n")
-
-
-
-				index = index + 1
-
-
-			if MAXROWS>0 and index >MAXROWS:
+			if MAXROWS > 0 and index > MAXROWS:
 				break
-				
+
 			l = CSV_input.readline()
 
-
+		# December's output
+		for row in month_reservoir:
+			CSV_output.write(row + "\n")
 
 		print 'index = ',index
 
+	def getRow(self, whole_attr_list, month_name):
+		output_list = []
+		for i in range(len(whole_attr_list)):
+			# check if this is valid attribute
+			if i in self.index_list:
+				# general attributes
+				attr = whole_attr_list[i]
+				# replace 'Unspecified' as ''
+				if attr == 'Unspecified':
+					attr = ''
+				# date is month name
+				if i == 1:
+					attr = month_name
+				output_list.append(attr)
+		return ",".join(a for a in output_list)
 
 def usage():
 	print """
 	Usage:
-	python generate_CSV.py <raw-CSV-file> <attr-list-file> <new-CSV-file> 
+	python generate_CSV.py <raw-CSV-file> <attr-list-file> <new-CSV-file>
 	where <raw-CSV-file> is the original CSV file downloaded from website,
 		<attr-list-file> is the file with the list of attributes to
 		be included in new CSV file, and
