@@ -185,6 +185,8 @@ class extract_Rule(object):
 
 			k = k + 1
 
+		# Remove the stored rows to try and save memory. No guarantee though.
+		del self.allRows
 
 	def compute_L1(self, CSV_file):
 		'''
