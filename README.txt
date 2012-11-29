@@ -13,6 +13,7 @@ b) A list of all the files that you are submitting:
 -- src
 * extract_Rule.py	(the main python script for finding association rules)
 * [OPTIONAL] generate_CSV.py   (the python script we used to generate our CSV file) [OPTIONAL]
+
 -- data
 * INTEGRATED-DATASET.csv (CSV file containing the INTEGRATED-DATASET file)
 * example-run.txt (output file of the interesting sample run)
@@ -250,16 +251,16 @@ fixed value for the LHS in order to simplify the discussion.
 
 1. Complaint Type VS Month
 
-[HEATING] => [December](Conf: 21%, Supp: 3%)
 [HEATING] => [January](Conf: 24%, Supp: 3%)
+[HEATING] => [December](Conf: 21%, Supp: 3%)
 [December] => [HEATING](Conf: 30%, Supp: 3%)
 [January] => [HEATING](Conf: 30%, Supp: 3%)
 [January,RESIDENTIAL BUILDING] => [HEATING](Conf: 55%, Supp: 3%)
 
 * Observation:
-Most complaints about 'HEATING' happen in winter (Jan., Feb. and Mar.). This is reasonable because
+Most complaints about 'HEATING' happen in winter (Dec. and Jan.). This is reasonable because
 residents use heating a lot at that time. If there was a contact with 311 in January from a
-Residential building, it was highly likely that it was for heating. This can help
+Residential building, it was highly likely that it was for heating. This can help 311 to devote resources to handling heating problems in January.
 
 2. Agency VS Complaint Type
 
@@ -301,7 +302,7 @@ This either shows that there is much more of transportation issues in Queens and
 Manhattan (which is rather counter-intuitive). However, if we consider that Queens and Brooklyn are
 residential areas, it makes sense. People are less tolerant of transportation issues in the suburbs.
 
-4. Complaint Type VS Agency VS Borough
+4. Complaint Type VS Agency VS Location Type VS Borough
 
 [NYPD,BROOKLYN] => [Street/Sidewalk](Conf: 81%, Supp: 2%)
 [DOT,QUEENS] => [Street Light Condition](Conf: 44%, Supp: 2%))
@@ -315,9 +316,12 @@ the greatest non-emergency reason for NYPD to go into Brooklyn.  Similarly, for 
 Queens due to street light issues. Department of Buildings dealt with Queens while Department
 of Sanitation dealt with Brooklyn.
 
+* Application:
+This will also help government agencies to make smart workload distribution in each borough.
+
 
 These are only a few of the rules that were generated. Even with the random
 sampling, we have a lot more interesting rules in the example-run.txt file.
 With more tweaking of the support and confidence parameters and possibly a
-larger sample, we may be able to even more richer results.
-obtain 
+larger sample, we may be able to obtain even more richer results.
+
