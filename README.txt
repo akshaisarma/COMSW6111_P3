@@ -14,7 +14,7 @@ b) A list of all the files that you are submitting:
 * extract_Rule.py	(the main python script for finding association rules)
 
 -- data
-* TODO... (*.CSV) (CSV file containing the INTEGRATED-DATASET file)
+* TODO... INTEGRATED_DATASET.csv (CSV file containing the INTEGRATED-DATASET file)
 * TODO... example-run.txt (output file of the interesting sample run)
 
 -------------------------------------------------------------
@@ -28,9 +28,11 @@ We used "311 Service Requests 2009" dataset (from https://data.cityofnewyork.us/
 
 Step 1. We sample the data by taking 10% of the whole data
 
-TODO(Akshai) how to sample 10% by month 
+TODO...(Akshai) how to sample 10% by month 
 
-Step 2. Since not all the columns have interesting attributes, so we selected those 5 attributes:
+Step 2. Since not all the columns have interesting attributes, so we selected those 5 attributes: 
+
+TODO...(Akshai) -- change the attr-list
 
 Created Date
 Agency
@@ -46,7 +48,7 @@ TODO...
 -------------------------------------------------------------
 d) clear description of how to run your program 
 
-Run the following from the directory where you put all the scripts (NOTE: you must cd to that directory before running this command):
+Run the following from the directory where you put run.sh (NOTE: you must cd to that directory before running this command):
 
 sh run.sh <INTEGRATED-DATASET-FILE> <min_sup> <min_conf>
 
@@ -57,9 +59,7 @@ sh run.sh <INTEGRATED-DATASET-FILE> <min_sup> <min_conf>
 
 For example, on a CLIC machine:
 cd /home/yd2234/ADB/proj3/COMSW6111_P3
-sh run.sh data/10k_5col.CSV 0.05 0.1 output.txt
-
-TODO... change the CSV file name 
+sh run.sh data/INTEGRATED_DATASET.csv 0.01 0.1
 
 You can run our scripts directly by the commands above, since we have already put our scripts under that directory.
 
@@ -113,16 +113,16 @@ Our Apriori Candidate Generation method is:
 
 
 Part 2. Association Rules
-TODO(Akshai) 
+TODO... (Akshai) 
 
 -------------------------------------------------------------
 f) The command line specification of an interesting sample run
 
 -- Run this command to get example-run.txt:
 
-sh run.sh data/10k_5col.CSV 0.04 0.1
+sh run.sh data/INTEGRATED_DATASET.csv 0.01 0.1
 
-TODO...also change the parameters and CSV file
+TODO... also change the parameters
 
 -- Briefly explain why the results are interesting
 
