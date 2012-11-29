@@ -28,6 +28,8 @@ We used "311 Service Requests 2009" dataset (from https://data.cityofnewyork.us/
 
 Step 1. We sample the data by taking 10% of the whole data
 
+TODO(Akshai) how to sample 10% by month 
+
 Step 2. Since not all the columns have interesting attributes, so we selected those 5 attributes:
 
 Created Date
@@ -109,12 +111,78 @@ Our Apriori Candidate Generation method is:
 	* Prune Step: 
 	Use the same prune method to remove candidates whose subsets are not in L_{k-1}. 
 
+
+Part 2. Association Rules
+TODO(Akshai) 
+
 -------------------------------------------------------------
 f) The command line specification of an interesting sample run
+
+-- Run this command to get example-run.txt:
+
+sh run.sh data/10k_5col.CSV 0.04 0.1
+
+TODO...also change the parameters and CSV file
+
+-- Briefly explain why the results are interesting
 
 TODO...
 
 -------------------------------------------------------------
 g) Any additional information that you consider significant
 
-TODO...
+Here we get several interesting observations about the rules:
+
+1. Complaint Type VS Month
+
+[HEATING] => [M01](Conf: 46%, Supp: 8%)
+[HEATING] => [M02](Conf: 23%, Supp: 4%)
+[HEATING] => [M03](Conf: 19%, Supp: 3%)
+
+* Observation:
+Most complaints about 'HEATING' happen in winter (Jan., Feb. and Mar.). This is reasonable because residents use heater a lot at that time.
+
+2. Agency VS Complaint Type
+
+[HPD] => [HEATING](Conf: 45%, Supp: 17%)
+[HPD] => [GENERAL CONSTRUCTION](Conf: 16%, Supp: 6%)
+[HPD] => [PLUMBING](Conf: 14%, Supp: 6%)
+[HPD] => [PAINT - PLASTER](Conf: 11%, Supp: 4%)
+
+* Note: HPD = Department of Housing Preservation and Development
+
+* Observation:
+Complaints to agency 'HPD' are more about 'HEATING', instead of other types.
+
+* Application:
+This can be used to make smart workload distribution in each agency.
+
+According to the complaints to Department of Housing Preservation and Development, we know that HPD should have more employees to deal with 'HEATING' problem.
+
+3. Agency VS Borough
+
+[DOT] => [QUEENS](Conf: 30%, Supp: 7%)
+[DOT] => [BROOKLYN](Conf: 29%, Supp: 6%)
+[DOT] => [MANHATTAN](Conf: 18%, Supp: 4%)
+[DOT] => [BRONX](Conf: 12%, Supp: 3%)
+
+* Note: DOT = Department of Transportation
+
+* Observation:
+Complaints to agency 'DOT' are more likely to happen in 'QUEENS' and 'BROOKLYN'.
+
+* Application:
+This can be used to evaluate the living condition of the borough, especially for the traffic condition in this case. 
+
+According to the complaints to Department of Transportation, we know that the traffic condition in QUEENS and BROOKLYN are very bad. We recommend to live in other boroughs such as MANHATTAN and BRONX, especially if you are a driver.
+
+4. Complaint Type VS Location Type
+
+[Street] => [Taxi Complaint](Conf: 12%, Supp: 1%)
+[Street] => [Sanitation Condition](Conf: 12%, Supp: 1%)
+
+* Observation:
+Complaints that happen in 'Street' are more likely to be 'Taxi Complaint' or 'Sanitation Condition'.
+
+* Application:
+People cares a lot about 'Taxi Complaint' and 'Sanitation Condition', so we should pay more attention on these parts to improve street condition.
