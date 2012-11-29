@@ -15,7 +15,7 @@ from collections import defaultdict
 MAXROWS = -1 # use this to limit the num of rows (-1 if no limit)
 
 # Number of total rows in month/ReductionPerMonth is
-ReductionPerMonth = 10
+ReductionPerMonth = 5
 TotalRows = 1783133
 Month_count = [('01',190672),('02',146081),('03',152854),('04',142147),('05',133735),('06',141523),('07',141213),('08',144857),('09',128200),('10',154531),('11',138040),('12',169280)]
 Month_name = {'01': 'January', '02': 'February', '03': 'March', '04': 'April', '05': 'May', '06': 'June', '07': 'July', '08': 'August', '09': 'September', '10': 'October', '11': 'November', '12': 'December'}
